@@ -23,18 +23,18 @@ planning format :
 */
 
 exports.getTodayPlanning = function (config) {
-  var planning = {}, i, env, cLength = config.length;
+  var planning = {}, i, env, cLength = config.length, schedule, interval, timestamp;
   for (i = 0; i < cLength; i++) {
     for (env in config[i].environments) {
       if (config[i].environments.hasOwnProperty(env)) {
-        var schedule = config[i].environments[env].schedule;
-        var interval = parser.parseExpression(
+        schedule = config[i].environments[env].schedule;
+        interval = parser.parseExpression(
           schedule,
           { currentDate: new Date(), endDate: (new Date()).setHours(23, 59, 59) }
         );
         while (true) {
           try {
-            var timestamp = interval.next().niceFormat();
+            timestamp = interval.next().niceFormat();
             if (!planning.hasOwnProperty(timestamp)) {
               planning[timestamp] = [];
             }
@@ -50,3 +50,4 @@ exports.getTodayPlanning = function (config) {
   }
   return planning;
 }
+
