@@ -5,7 +5,8 @@
 var parameters = {
   configFile: 'config.json',
   logFile: 'engine.log',
-  sshBinary: '/usr/bin/ssh'
+  sshBinary: '/usr/bin/ssh',
+  sshPrivateKey: 'keys/id_rsa'
 };
 
 var parser = require('cron-parser'),
@@ -37,14 +38,14 @@ function output(message) {
 try {
   var jsonData = fs.readFileSync(parameters.configFile, { encoding: "utf8" });
 } catch (error) {
-  output(error);
+  output('Config file "' + parameters.configFile + '" error : ' + error);
   process.exit(1);
 }
 
 try {
   var config = JSON.parse(jsonData);
 } catch (error) {
-  output(error);
+  output('Config file "' + parameters.configFile + '" error : ' + error);
   process.exit(1);
 }
 
@@ -94,7 +95,7 @@ for (i = 0; i < cLength; i++) {
 }
 
 function getSshCommand(command, server) {
-  return parameters.sshBinary + ' ' + server.host + ' -l ' + server.user + ' "' + command + '"';
+  return parameters.sshBinary + ' -i ' + parameters.sshPrivateKey + ' ' + server.host + ' -l ' + server.user + ' "' + command + '"';
 }
 
 function sendEmail(email, message) {
