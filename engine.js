@@ -2,97 +2,20 @@
 /*jslint node: true */
 "use strict";
 
-var parameters = {
-  configFile: 'config.json',
-  logFile: 'engine.log',
-  sshBinary: '/usr/bin/ssh',
-  sshPrivateKey: 'keys/id_rsa'
-};
+require('./augmented_types');
 
-var parser = require('cron-parser'),
-  child_process = require('child_process'),
-  fs = require('fs'),
-  Log = require('log');
+var child_process = require('child_process'),
+  output = require('./output'),
+  json_reader = require('./json_reader'),
+  orchestrator = require('./orchestrator');
 
-Date.prototype.niceFormat = function () {
-  function pad2(n) {
-    return (n < 10 ? '0' : '') + n;
-  }
-  return this.getFullYear() + '-' +
-    pad2(this.getMonth() + 1) + '-' +
-    pad2(this.getDate()) + ' ' +
-    pad2(this.getHours()) + ':' +
-    pad2(this.getMinutes()) + ':' +
-    pad2(this.getSeconds());
-};
+var parameters = json_reader.load('config/parameters.json'),
+    config = json_reader.load('config/config.json');
 
-function output(message) {
-  var log = new Log(
-    'debug',
-    fs.createWriteStream(parameters.logFile, { flags: 'a', encoding: 'utf8' })
-  ), timestamp = (new Date()).niceFormat();
-  console.log('[' + timestamp + '] ' + message);
-  log.info(message);
-}
+output.setLogFile(parameters.logFile);
 
-try {
-  var jsonData = fs.readFileSync(parameters.configFile, { encoding: "utf8" });
-} catch (error) {
-  output('Config file "' + parameters.configFile + '" error : ' + error);
-  process.exit(1);
-}
-
-try {
-  var config = JSON.parse(jsonData);
-} catch (error) {
-  output('Config file "' + parameters.configFile + '" error : ' + error);
-  process.exit(1);
-}
-
-// planning for today (script shutdowns itself at 00.00 to be relaunched by forever
-var planning = {};
-
-/* 
-planning format :
----------------
-{ 'Wed Feb 18 2015 13:12:00 GMT+0100 (CET)': 
-   [ { command: '/usr/bin/env php /opt/…',
-       schedule: '* * * * *',
-       servers: [Object],
-       email: 'john.doe@foo.bar' },
-     { command: '/usr/bin/env php /opt/…',
-       schedule: '* * * * *',
-       servers: [Object],
-       email: 'john.doe@foo.bar' } ],
-  'Wed Feb 18 2015 13:13:00 GMT+0100 (CET)': 
-*/
-
-var i, env, cLength = config.length;
-for (i = 0; i < cLength; i++) {
-  for (env in config[i].environments) {
-    if (config[i].environments.hasOwnProperty(env)) {
-      var schedule = config[i].environments[env].schedule;
-      var interval = parser.parseExpression(
-        schedule,
-        { currentDate: new Date(), endDate: (new Date()).setHours(23, 59, 59) }
-      );
-      while (true) {
-        try {
-          var timestamp = interval.next().niceFormat();
-          if (!planning.hasOwnProperty(timestamp)) {
-            planning[timestamp] = [];
-          }
-          // { name:'CPUINFO Snapshot', env:'dev', config:config[0].environments['dev'] }
-          planning[timestamp].push(
-            { name: config[i].name, env: env, config: config[i].environments[env] }
-          );
-        } catch (error) {
-          break;
-        }
-      }
-    }
-  }
-}
+// script shutdowns itself at 00.00 to be relaunched by forever
+var planning = orchestrator.getTodayPlanning(config);
 
 function getSshCommand(command, server) {
   return parameters.sshBinary + ' ' + server.host + ' -l ' + server.user +
@@ -101,22 +24,22 @@ function getSshCommand(command, server) {
 
 function sendEmail(email, message) {
   // TODO: Implement function
-  output('Sending EMAIL to ' + email);
+  output.send('Sending EMAIL to ' + email);
 }
 
 function executeJob(job) {
   var server = job.config.servers[0], altServer;
-  output('Triggering JOB "' + job.name + ' (' + job.env + ')" on server ' + server.host);
+  output.send('Triggering JOB "' + job.name + ' (' + job.env + ')" on server ' + server.host);
   child_process.exec(getSshCommand(job.config.command, server), function (error, stdout, stderr) {
     if (error) {
       var errorMessage = 'JOB "' + job.name + ' (' + job.env + ')" on server ' +
         server.host + ' failed with exit code ' + error.code + '\n' +
         'STDOUT:\n' + stdout + '\n' + 'STDERR:\n' + stderr;
-      output(errorMessage);
+      output.send(errorMessage);
       sendEmail(job.config.email, errorMessage);
       if (job.config.servers[1]) { // Run task on fallback server if exists
         altServer = job.config.servers[1];
-        output(
+        output.send(
           'Triggering JOB "' + job.name + ' (' + job.env + ')" ' +
             'on alternative server ' + altServer.host
         );
@@ -127,10 +50,10 @@ function executeJob(job) {
               var altErrorMessage = 'JOB "' + job.name + ' (' + job.env + ')" on server ' +
                 altServer.host + ' failed with exit code ' + altError.code + '\n' +
                 'STDOUT:\n' + altStdout + '\n' + 'STDERR:\n' + altStderr;
-              output(altErrorMessage);
+              output.send(altErrorMessage);
               sendEmail(job.config.email, altErrorMessage);
             } else {
-              output(
+              output.send(
                 'JOB "' + job.name + ' (' + job.env + ')" ' +
                   ' on server ' + altServer.host + ' completed successfully'
               );
@@ -139,7 +62,7 @@ function executeJob(job) {
         );
       }
     } else {
-      output(
+      output.send(
         'JOB "' + job.name + ' (' + job.env + ')" ' +
           'on server ' + server.host + ' completed successfully'
       );
@@ -159,12 +82,12 @@ var tomorrow = new Date(today);
 tomorrow.setDate(today.getDate() + 1);
 tomorrow.setHours(0, 0, 0);
 var shutdownTimestamp = tomorrow.niceFormat();
-output('Script will automatically shutdown at [' + shutdownTimestamp + ']');
+output.send('Script will automatically shutdown at [' + shutdownTimestamp + ']');
 
 setInterval(function () {
   var timestamp = (new Date()).niceFormat();
   if (timestamp === shutdownTimestamp) {
-    output('Scheduled shutdown of the script');
+    output.send('Scheduled shutdown of the script');
     process.exit(0);
   }
   if (planning.hasOwnProperty(timestamp)) {

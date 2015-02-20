@@ -1,14 +1,14 @@
 [
   {
-    "name": "CPUINFO Snapshot job",
+    "name": "PWET Job",
     "environments": 
       {
         "dev": {
-          "command": "/bin/cat /proc/cpuinfo >> /tmp/cpuinfo.log",
+          "command": "/home/john/pwet.sh",
                   "schedule": "* * * * *",
                   "servers": [
                     {
-                      "host": "dev-server",
+                      "host": "foobar",
                       "user": "john"
                     }
  
@@ -16,20 +16,22 @@
                   "email": "john.doe@foo.bar"
         },
         "tst": {
-          "command": "false /bin/cat /proc/cpuinfo >> /tmp/cpuinfo.log",
+          "command": "/home/john/pwet.sh",
                   "schedule": "* * * * *",
                   "servers": [
                     {
-                      "host": "tst-server-a",
+                      "host": "foobar-tst-a",
                       "user": "john"
                     },
                     {
-                      "host": "tst-server-b",
+                      "host": "foobar-tst-b",
                       "user": "john"
                     }
+
                   ],
                   "email": "john.doe@foo.bar"
-         }
+        }
+
       }
    }
 ]

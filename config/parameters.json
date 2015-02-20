@@ -1,0 +1,5 @@
+{
+  "logFile": "logs/engine.log",
+  "sshBinary": "/usr/bin/ssh",
+  "sshPrivateKey": "keys/id_rsa"
+}
