@@ -6,6 +6,7 @@
 
 3. Jobs are configured in the JSON formatted file "config.json", which is structured like follows :
 
+```
 [
   {
     "name": "CPUINFO Snapshot job",
@@ -41,6 +42,7 @@
       }
    }
 ]
+```
 
 4. Scheduler SSH public key must be correctly setup on remote user@hosts that must be connected
 
