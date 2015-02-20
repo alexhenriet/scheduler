@@ -3,6 +3,8 @@ require('./augmented_types');
 
 var parser = require('cron-parser');
 
+module.exports = {};
+
 /* 
 planning format :
 ---------------
@@ -22,7 +24,7 @@ planning format :
 
 */
 
-exports.getTodayPlanning = function (config) {
+module.exports.getTodayPlanning = function (config) {
   var planning = {}, i, env, cLength = config.length, schedule, interval, timestamp;
   for (i = 0; i < cLength; i++) {
     for (env in config[i].environments) {

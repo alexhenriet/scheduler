@@ -2,11 +2,13 @@ var child_process = require('child_process');
 
 var output, parameters;
 
-exports.setOutput = function (o) {
+module.exports = {};
+
+module.exports.setOutput = function (o) {
   output = o;
 }
 
-exports.setParameters = function(p) {
+module.exports.setParameters = function(p) {
   parameters = p;
 }
 
@@ -63,7 +65,7 @@ function executeJob(job) {
   });
 }
 
-exports.executeTimestampJobs = function (jobs) {
+module.exports.executeTimestampJobs = function (jobs) {
   var i, jLength = jobs.length;
   for (i = 0; i < jLength; i++) {
     executeJob(jobs[i]);

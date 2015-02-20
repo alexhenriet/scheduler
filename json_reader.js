@@ -5,6 +5,6 @@ exports.load = function (file) {
     var jsonData = fs.readFileSync(file, { encoding: "utf8" });
     return JSON.parse(jsonData);
   } catch (error) {
-    throw ('json_reader encountered an error with file "' + file + '" error : ' + error);
+    throw ('Json_reader error: file "' + file + '" error : ' + error);
   }
 };

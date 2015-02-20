@@ -1,14 +1,18 @@
 require('./augmented_types');
 
-var fs = require('fs'), Log = require('log'), logFile;
+var fs = require('fs'), 
+  Log = require('log'),
+  logFile;
+  
+module.exports = {};
 
-exports.setLogFile = function (file) {
+module.exports.setLogFile = function (file) {
   logFile = file;
 }
 
-exports.send = function (message) {
+module.exports.send = function (message) {
   if (! logFile) {
-    throw ('Out error: logFile must be set before put() can be used');
+    throw ('Output error: logFile must be set before put() can be used');
   }
   var log = new Log(
     'debug',
