@@ -95,7 +95,8 @@ for (i = 0; i < cLength; i++) {
 }
 
 function getSshCommand(command, server) {
-  return parameters.sshBinary + ' -i ' + parameters.sshPrivateKey + ' ' + server.host + ' -l ' + server.user + ' "' + command + '"';
+  return parameters.sshBinary + ' ' + server.host + ' -l ' + server.user +
+    ' -i ' + parameters.sshPrivateKey + ' "' + command + '"';
 }
 
 function sendEmail(email, message) {
