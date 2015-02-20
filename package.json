@@ -1,0 +1,21 @@
+{
+  "name": "scheduler",
+  "version": "1.0.0",
+  "description": "cron-like scheduler with remote execution via ssh",
+  "main": "engine.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "scheduler",
+    "cron",
+    "ssh"
+  ],
+  "author": "Alexandre Henriet",
+  "license": "ISC",
+  "dependencies": {
+    "cron-parser": "^0.6.1",
+    "log": "^1.4.0",
+    "nodelint": "^0.6.2"
+  }
+}

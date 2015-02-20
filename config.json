@@ -1,0 +1,35 @@
+[
+  {
+    "name": "CPUINFO Snapshot job",
+    "environments": 
+      {
+        "dev": {
+          "command": "/bin/cat /proc/cpuinfo >> /tmp/cpuinfo.log",
+                  "schedule": "* * * * *",
+                  "servers": [
+                    {
+                      "host": "dev-server",
+                      "user": "john"
+                    }
+ 
+                  ],
+                  "email": "john.doe@foo.bar"
+        },
+        "tst": {
+          "command": "false /bin/cat /proc/cpuinfo >> /tmp/cpuinfo.log",
+                  "schedule": "* * * * *",
+                  "servers": [
+                    {
+                      "host": "tst-server-a",
+                      "user": "john"
+                    },
+                    {
+                      "host": "tst-server-b",
+                      "user": "john"
+                    }
+                  ],
+                  "email": "john.doe@foo.bar"
+         }
+      }
+   }
+]
