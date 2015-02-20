@@ -7,8 +7,13 @@ require('./augmented_types');
 var output = require('./output'), json_reader = require('./json_reader'),
   orchestrator = require('./orchestrator'), executor = require('./executor');
 
-var parameters = json_reader.load('config/parameters.json'),
-  config = json_reader.load('config/config.json');
+try {
+  var parameters = json_reader.load('config/parameters.json'),
+    config = json_reader.load('config/config.json');
+} catch (error) {
+  console.log(error);
+  process.exit(1);
+}
 
 output.setLogFile(parameters.logFile);
 executor.setOutput(output);
